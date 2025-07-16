@@ -9,7 +9,7 @@ A simple Node.js backend for splitting expenses among groups.
 4. Run: `node server.js`
 
 ## Deployed URL
-- [https://expense-splitter.onrender.com](https://expense-splitter.onrender.com)
+- [expensesplitter-production.up.railway.app](expensesplitter-production.up.railway.app)
 
 ## Postman Collection
 - Gist: `<your-gist-url>`
