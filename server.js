@@ -1,13 +1,13 @@
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
+const path = require('path');
 
 const app = express();
-const PORT = process.env.PORT || 3001;
 
 // Middleware
-app.use(bodyParser.json());
+app.use(express.json()); // Parse JSON bodies
+app.use(express.static(path.join(__dirname, 'public'))); // Serve frontend
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI, {
@@ -29,7 +29,10 @@ const expenseSchema = new mongoose.Schema({
 const Expense = mongoose.model('Expense', expenseSchema);
 
 // Routes
-// GET /expenses
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html')); // Serve frontend
+});
+
 app.get('/expenses', async (req, res) => {
   try {
     const expenses = await Expense.find();
@@ -39,12 +42,8 @@ app.get('/expenses', async (req, res) => {
   }
 });
 
-app.get('/', (req, res) => {
-  res.send('Welcome to the Expense Splitter API!');
-});
-
-// POST /expenses
 app.post('/expenses', async (req, res) => {
+  console.log('Request body:', req.body); // Debug
   const { amount, description, paid_by, split_type, participants, splits } = req.body;
   if (!amount || amount <= 0) return res.status(400).json({ success: false, message: 'Amount must be positive' });
   if (!description) return res.status(400).json({ success: false, message: 'Description is required' });
@@ -57,12 +56,12 @@ app.post('/expenses', async (req, res) => {
   if (split_type === 'percentage') {
     if (!splits || splits.length === 0) return res.status(400).json({ success: false, message: 'Splits required' });
     const total = splits.reduce((sum, s) => sum + s.value, 0);
-    if (total !== 100) return res.status(400).json({ success: false, message: 'Percentages must sum to 100' });
+    if (Math.abs(total - 100) > 0.01) return res.status(400).json({ success: false, message: 'Percentages must sum to 100' });
   }
   if (split_type === 'exact') {
     if (!splits || splits.length === 0) return res.status(400).json({ success: false, message: 'Splits required' });
     const total = splits.reduce((sum, s) => sum + s.value, 0);
-    if (total !== amount) return res.status(400).json({ success: false, message: 'Split amounts must sum to total' });
+    if (Math.abs(total - amount) > 0.01) return res.status(400).json({ success: false, message: 'Split amounts must sum to total' });
   }
 
   try {
@@ -74,7 +73,6 @@ app.post('/expenses', async (req, res) => {
   }
 });
 
-// PUT /expenses/:id
 app.put('/expenses/:id', async (req, res) => {
   try {
     const expense = await Expense.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -85,7 +83,6 @@ app.put('/expenses/:id', async (req, res) => {
   }
 });
 
-// DELETE /expenses/:id
 app.delete('/expenses/:id', async (req, res) => {
   try {
     const expense = await Expense.findByIdAndDelete(req.params.id);
@@ -96,7 +93,6 @@ app.delete('/expenses/:id', async (req, res) => {
   }
 });
 
-// GET /people
 app.get('/people', async (req, res) => {
   try {
     const expenses = await Expense.find();
@@ -112,7 +108,6 @@ app.get('/people', async (req, res) => {
   }
 });
 
-// GET /balances
 app.get('/balances', async (req, res) => {
   try {
     const expenses = await Expense.find();
@@ -134,7 +129,6 @@ app.get('/balances', async (req, res) => {
   }
 });
 
-// GET /settlements
 app.get('/settlements', async (req, res) => {
   try {
     const expenses = await Expense.find();
@@ -157,7 +151,7 @@ app.get('/settlements', async (req, res) => {
         Object.keys(balances).forEach(other => {
           if (balances[other] > 0) {
             const amount = Math.min(debt, balances[other]);
-            if (amount) {
+            if (amount > 0.01) {
               settlements.push({ from: person, to: other, amount });
               balances[person] += amount;
               balances[other] -= amount;
@@ -172,4 +166,5 @@ app.get('/settlements', async (req, res) => {
   }
 });
 
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
