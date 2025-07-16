@@ -11,9 +11,6 @@ A simple Node.js backend for splitting expenses among groups.
 ## Deployed URL
 - [expensesplitter-production.up.railway.app](expensesplitter-production.up.railway.app)
 
-## Postman Collection
-- Gist: `<your-gist-url>`
-
 ## Endpoints
 - GET /expenses: List all expenses
 - POST /expenses: Add expense
