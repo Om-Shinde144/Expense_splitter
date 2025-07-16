@@ -29,188 +29,167 @@
         <div>
           <label class="block text-sm font-medium text-gray-700">Split Type</label>
           <select id="split_type" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2">
-          <option value="equal">Equal</option>
-          <option value="percentage">Percentage</option>
-          <option value="exact">Exact</option>
-        </select>
+            <option value="equal">Equal</option>
+            <option value="percentage">Percentage</option>
+            <option value="exact">Exact</option>
+          </select>
+        </div>
+        <div id="participants-section">
+          <label class="block text-sm font-medium text-gray-700">Participants (comma-separated)</label>
+          <input type="text" id="participants" placeholder="e.g., Shantanu, Sanket, Om" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2">
+        </div>
+        <div id="splits-section" class="hidden">
+          <label class="block text-sm font-medium text-gray-700">Splits (Person:Value, comma-separated)</label>
+          <input type="text" id="splits" placeholder="e.g., Shantanu:30, Sanket:30, Om:40" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2">
+        </div>
+        <div id="split-feedback" class="text-sm text-gray-600"></div>
+        <input type="hidden" id="edit_id">
+        <button id="submit-expense" class="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600">Add Expense</button>
+        <button id="cancel-edit" class="w-full bg-gray-300 text-gray-700 p-2 rounded-md hover:bg-gray-400 hidden">Cancel Edit</button>
       </div>
-      <div id="participants-section">
-        <label class="block text-sm font-medium text-gray-700">Participants (comma-separated)</label>
-        <input type="text" id="participants" placeholder="e.g., Shantanu, Sanket, Om" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2">
+    </div>
+
+    <!-- Expenses List -->
+    <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+      <h2 class="text-2xl font-semibold mb-4">Expenses</h2>
+      <table class="w-full border-collapse">
+        <thead>
+          <tr class="bg-gray-200">
+            <th class="p-2 text-left">Description</th>
+            <th class="p-2 text-left">Amount</th>
+            <th class="p-2 text-left">Paid By</th>
+            <th class="p-2 text-left">Split Type</th>
+            <th class="p-2 text-left">Participants/Splits</th>
+            <th class="p-2 text-left">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="expenses-table"></tbody>
+      </table>
+    </div>
+
+    <!-- People, Balances, Settlements -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-2xl font-semibold mb-4">People</h2>
+        <ul id="people-list" class="list-disc pl-5"></ul>
       </div>
-      <div id="splits-section" class="hidden">
-        <label class="block text-sm font-medium text-gray-700">Splits (Person:Value, comma-separated)</label>
-        <input type="text" id="splits" placeholder="e.g., Shantanu:30, Sanket:30, Om:40" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2">
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-2xl font-semibold mb-4">Balances</h2>
+        <ul id="balances-list" class="list-disc pl-5"></ul>
       </div>
-      <div id="split-feedback" class="text-sm text-gray-600"></div>
-      <input type="hidden" id="edit_id">
-      <button id="submit-expense" class="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600">Add Expense</button>
-      <button id="cancel-edit" class="w-full bg-gray-300 text-gray-700 p-2 rounded-md hover:bg-gray-400 hidden">Cancel Edit</button>
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-2xl font-semibold mb-4">Settlements</h2>
+        <ul id="settlements-list" class="list-disc pl-5"></ul>
+      </div>
     </div>
   </div>
 
-  <!-- Expenses List -->
-  <div class="bg-white p-6 rounded-lg shadow-md mb-6">
-    <h2 class="text-2xl font-semibold mb-4">Expenses</h2>
-    <table class="w-full border-collapse">
-      <thead>
-        <tr class="bg-gray-200">
-          <th class="p-2 text-left">Description</th>
-          <th class="p-2 text-left">Amount</th>
-          <th class="p-2 text-left">Paid By</th>
-          <th class="p-2 text-left">Split Type</th>
-          <th class="p-2 text-left">Participants/Splits</th>
-          <th class="p-2 text-left">Actions</th>
-        </tr>
-      </thead>
-      <tbody id="expenses-table"></tbody>
-    </table>
-  </div>
+  <script>
+    const API_BASE = ''; // Empty for local (http://localhost:3000) or set to Render URL
+    let people = [];
 
-  <!-- People, Balances, Settlements -->
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-    <div class="bg-white p-6 rounded-lg shadow-md">
-      <h2 class="text-2xl font-semibold mb-4">People</h2>
-      <ul id="people-list" class="list-disc pl-5"></ul>
-    </div>
-    <div class="bg-white p-6 rounded-lg shadow-md">
-      <h2 class="text-2xl font-semibold mb-4">Balances</h2>
-      <ul id="balances-list" class="list-disc pl-5"></ul>
-    </div>
-    <div class="bg-white p-6 rounded-lg shadow-md">
-      <h2 class="text-2xl font-semibold mb-4">Settlements</h2>
-      <ul id="settlements-list" class="list-disc pl-5"></ul>
-    </div>
-  </div>
-</div>
-
-<script>
-  const API_BASE = 'https://expense-splitter.onrender.com'; // Set to your Render URL
-  let people = [];
-
-  // Fetch and display expenses
-  async function fetchExpenses() {
-    try {
+    // Fetch and display expenses
+    async function fetchExpenses() {
       const res = await fetch(`${API_BASE}/expenses`);
       const { success, data } = await res.json();
-      if (!success) throw new Error('Failed to fetch expenses');
-      const table = document.getElementById('expenses-table');
-      table.innerHTML = '';
-      data.forEach(exp => {
-        const row = document.createElement('tr');
-        const splits = exp.split_type === 'equal' ? exp.participants.join(', ') : exp.splits.map(s => `${s.person}: ${s.value}`).join(', ');
-        row.innerHTML = `
-          <td class="p-2 border">${exp.description}</td>
-          <td class="p-2 border">${exp.amount.toFixed(2)}</td>
-          <td class="p-2 border">${exp.paid_by}</td>
-          <td class="p-2 border">${exp.split_type}</td>
-          <td class="p-2 border">${splits}</td>
-          <td class="p-2 border">
-            <button onclick="editExpense('${exp._id}')" class="text-blue-500 hover:underline">Edit</button>
-            <button onclick="deleteExpense('${exp._id}')" class="text-red-500 hover:underline ml-2">Delete</button>
-          </td>
-        `;
-        table.appendChild(row);
-      });
-    } catch (error) {
-      console.error('Fetch expenses error:', error);
-      alert('Error fetching expenses: ' + error.message);
+      if (success) {
+        const table = document.getElementById('expenses-table');
+        table.innerHTML = '';
+        data.forEach(exp => {
+          const row = document.createElement('tr');
+          const splits = exp.split_type === 'equal' ? exp.participants.join(', ') : exp.splits.map(s => `${s.person}: ${s.value}`).join(', ');
+          row.innerHTML = `
+            <td class="p-2 border">${exp.description}</td>
+            <td class="p-2 border">${exp.amount.toFixed(2)}</td>
+            <td class="p-2 border">${exp.paid_by}</td>
+            <td class="p-2 border">${exp.split_type}</td>
+            <td class="p-2 border">${splits}</td>
+            <td class="p-2 border">
+              <button onclick="editExpense('${exp._id}')" class="text-blue-500 hover:underline">Edit</button>
+              <button onclick="deleteExpense('${exp._id}')" class="text-red-500 hover:underline ml-2">Delete</button>
+            </td>
+          `;
+          table.appendChild(row);
+        });
+      }
     }
-  }
 
-  // Fetch and display people
-  async function fetchPeople() {
-    try {
+    // Fetch and display people
+    async function fetchPeople() {
       const res = await fetch(`${API_BASE}/people`);
       const { success, data } = await res.json();
-      if (!success) throw new Error('Failed to fetch people');
-      people = data;
-      const list = document.getElementById('people-list');
-      list.innerHTML = '';
-      data.forEach(p => {
-        const li = document.createElement('li');
-        li.textContent = p;
-        list.appendChild(li);
-      });
-    } catch (error) {
-      console.error('Fetch people error:', error);
-      alert('Error fetching people: ' + error.message);
+      if (success) {
+        people = data;
+        const list = document.getElementById('people-list');
+        list.innerHTML = '';
+        data.forEach(p => {
+          const li = document.createElement('li');
+          li.textContent = p;
+          list.appendChild(li);
+        });
+      }
     }
-  }
 
-  // Fetch and display balances
-  async function fetchBalances() {
-    try {
+    // Fetch and display balances
+    async function fetchBalances() {
       const res = await fetch(`${API_BASE}/balances`);
       const { success, data } = await res.json();
-      if (!success) throw new Error('Failed to fetch balances');
-      const list = document.getElementById('balances-list');
-      list.innerHTML = '';
-      Object.entries(data).forEach(([person, balance]) => {
-        const li = document.createElement('li');
-        li.textContent = `${person}: ₹${balance.toFixed(2)}`;
-        li.className = balance >= 0 ? 'text-green-600' : 'text-red-600';
-        list.appendChild(li);
-      });
-    } catch (error) {
-      console.error('Fetch balances error:', error);
-      alert('Error fetching balances: ' + error.message);
+      if (success) {
+        const list = document.getElementById('balances-list');
+        list.innerHTML = '';
+        Object.entries(data).forEach(([person, balance]) => {
+          const li = document.createElement('li');
+          li.textContent = `${person}: ${balance.toFixed(2)}`;
+          li.className = balance >= 0 ? 'text-green-600' : 'text-red-600';
+          list.appendChild(li);
+        });
+      }
     }
-  }
 
-  // Fetch and display settlements
-  async function fetchSettlements() {
-    try {
+    // Fetch and display settlements
+    async function fetchSettlements() {
       const res = await fetch(`${API_BASE}/settlements`);
       const { success, data } = await res.json();
-      if (!success) throw new Error('Failed to fetch settlements');
-      const list = document.getElementById('settlements-list');
-      list.innerHTML = '';
-      data.forEach(s => {
-        const li = document.createElement('li');
-        li.textContent = `${s.from} owes ${s.to} ₹${s.amount.toFixed(2)}`;
-        list.appendChild(li);
-      });
-    } catch (error) {
-      console.error('Fetch settlements error:', error);
-      alert('Error fetching settlements: ' + error.message);
+      if (success) {
+        const list = document.getElementById('settlements-list');
+        list.innerHTML = '';
+        data.forEach(s => {
+          const li = document.createElement('li');
+          li.textContent = `${s.from} owes ${s.to} ₹${s.amount.toFixed(2)}`;
+          list.appendChild(li);
+        });
+      }
     }
-  }
 
-  // Edit expense
-  async function editExpense(id) {
-    try {
+    // Edit expense
+    async function editExpense(id) {
       const res = await fetch(`${API_BASE}/expenses`);
       const { success, data } = await res.json();
-      if (!success) throw new Error('Failed to fetch expenses');
-      const expense = data.find(exp => exp._id === id);
-      if (expense) {
-        document.getElementById('form-title').textContent = 'Edit Expense';
-        document.getElementById('amount').value = expense.amount;
-        document.getElementById('description').value = expense.description;
-        document.getElementById('paid_by').value = expense.paid_by;
-        document.getElementById('split_type').value = expense.split_type;
-        document.getElementById('edit_id').value = id;
-        document.getElementById('submit-expense').textContent = 'Update Expense';
-        document.getElementById('cancel-edit').classList.remove('hidden');
-        toggleSplitFields();
-        if (expense.split_type === 'equal') {
-          document.getElementById('participants').value = expense.participants.join(', ');
-        } else {
-          document.getElementById('splits').value = expense.splits.map(s => `${s.person}:${s.value}`).join(', ');
+      if (success) {
+        const expense = data.find(exp => exp._id === id);
+        if (expense) {
+          document.getElementById('form-title').textContent = 'Edit Expense';
+          document.getElementById('amount').value = expense.amount;
+          document.getElementById('description').value = expense.description;
+          document.getElementById('paid_by').value = expense.paid_by;
+          document.getElementById('split_type').value = expense.split_type;
+          document.getElementById('edit_id').value = id;
+          document.getElementById('submit-expense').textContent = 'Update Expense';
+          document.getElementById('cancel-edit').classList.remove('hidden');
+          toggleSplitFields();
+          if (expense.split_type === 'equal') {
+            document.getElementById('participants').value = expense.participants.join(', ');
+          } else {
+            document.getElementById('splits').value = expense.splits.map(s => `${s.person}:${s.value}`).join(', ');
+          }
+          updateSplitFeedback();
         }
-        updateSplitFeedback();
       }
-    } catch (error) {
-      console.error('Edit expense error:', error);
-      alert('Error loading expense: ' + error.message);
     }
-  }
 
-  // Delete expense
-  async function deleteExpense(id) {
-    if (confirm('Are you sure you want to delete this expense?')) {
-      try {
+    // Delete expense
+    async function deleteExpense(id) {
+      if (confirm('Are you sure you want to delete this expense?')) {
         const res = await fetch(`${API_BASE}/expenses/${id}`, { method: 'DELETE' });
         const { success } = await res.json();
         if (success) {
@@ -218,36 +197,32 @@
         } else {
           alert('Failed to delete expense');
         }
-      } catch (error) {
-        console.error('Delete expense error:', error);
-        alert('Error deleting expense: ' + error.message);
       }
     }
-  }
 
-  // Handle form submission
-  document.getElementById('submit-expense').addEventListener('click', async () => {
-    const amount = parseFloat(document.getElementById('amount').value);
-    const description = document.getElementById('description').value;
-    const paid_by = document.getElementById('paid_by').value;
-    const split_type = document.getElementById('split_type').value;
-    const participants = document.getElementById('participants').value.split(',').map(p => p.trim()).filter(p => p);
-    const splitsInput = document.getElementById('splits').value.split(',').map(s => {
-      const [person, value] = s.split(':').map(p => p.trim());
-      return { person, value: parseFloat(value) };
-    }).filter(s => s.person && !isNaN(s.value));
-    const edit_id = document.getElementById('edit_id').value;
+    // Handle form submission
+    document.getElementById('submit-expense').addEventListener('click', async () => {
+      const amount = parseFloat(document.getElementById('amount').value);
+      const description = document.getElementById('description').value;
+      const paid_by = document.getElementById('paid_by').value;
+      const split_type = document.getElementById('split_type').value;
+      const participants = document.getElementById('participants').value.split(',').map(p => p.trim()).filter(p => p);
+      const splitsInput = document.getElementById('splits').value.split(',').map(s => {
+        const [person, value] = s.split(':').map(p => p.trim());
+        return { person, value: parseFloat(value) };
+      }).filter(s => s.person && !isNaN(s.value));
+      const edit_id = document.getElementById('edit_id').value;
 
-    const body = { amount, description, paid_by, split_type };
-    if (split_type === 'equal') {
-      body.participants = participants;
-    } else {
-      body.splits = splitsInput;
-    }
+      const body = { amount, description, paid_by, split_type };
+      if (split_type === 'equal') {
+        body.participants = participants;
+      } else {
+        body.splits = splitsInput;
+      }
 
-    try {
       const method = edit_id ? 'PUT' : 'POST';
       const url = edit_id ? `${API_BASE}/expenses/${edit_id}` : `${API_BASE}/expenses`;
+
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
@@ -258,84 +233,79 @@
         fetchAll();
         resetForm();
       } else {
-        console.error('Submit expense error:', message);
         alert(message);
       }
-    } catch (error) {
-      console.error('Submit expense error:', error);
-      alert('Error submitting expense: ' + error.message);
+    });
+
+    // Cancel edit
+    document.getElementById('cancel-edit').addEventListener('click', resetForm);
+
+    // Reset form
+    function resetForm() {
+      document.getElementById('form-title').textContent = 'Add Expense';
+      document.getElementById('amount').value = '';
+      document.getElementById('description').value = '';
+      document.getElementById('paid_by').value = '';
+      document.getElementById('split_type').value = 'equal';
+      document.getElementById('participants').value = '';
+      document.getElementById('splits').value = '';
+      document.getElementById('edit_id').value = '';
+      document.getElementById('submit-expense').textContent = 'Add Expense';
+      document.getElementById('cancel-edit').classList.add('hidden');
+      toggleSplitFields();
+      updateSplitFeedback();
     }
-  });
 
-  // Cancel edit
-  document.getElementById('cancel-edit').addEventListener('click', resetForm);
+    // Toggle split fields based on split type
+    document.getElementById('split_type').addEventListener('change', toggleSplitFields);
+    function toggleSplitFields() {
+      const split_type = document.getElementById('split_type').value;
+      document.getElementById('participants-section').classList.toggle('hidden', split_type !== 'equal');
+      document.getElementById('splits-section').classList.toggle('hidden', split_type === 'equal');
+      updateSplitFeedback();
+    }
 
-  // Reset form
-  function resetForm() {
-    document.getElementById('form-title').textContent = 'Add Expense';
-    document.getElementById('amount').value = '';
-    document.getElementById('description').value = '';
-    document.getElementById('paid_by').value = '';
-    document.getElementById('split_type').value = 'equal';
-    document.getElementById('participants').value = '';
-    document.getElementById('splits').value = '';
-    document.getElementById('edit_id').value = '';
-    document.getElementById('submit-expense').textContent = 'Add Expense';
-    document.getElementById('cancel-edit').classList.add('hidden');
-    toggleSplitFields();
-    updateSplitFeedback();
-  }
-
-  // Toggle split fields based on split type
-  document.getElementById('split_type').addEventListener('change', toggleSplitFields);
-  function toggleSplitFields() {
-    const split_type = document.getElementById('split_type').value;
-    document.getElementById('participants-section').classList.toggle('hidden', split_type !== 'equal');
-    document.getElementById('splits-section').classList.toggle('hidden', split_type === 'equal');
-    updateSplitFeedback();
-  }
-
-  // Real-time split feedback
-  document.getElementById('amount').addEventListener('input', updateSplitFeedback);
-  document.getElementById('participants').addEventListener('input', updateSplitFeedback);
-  document.getElementById('splits').addEventListener('input', updateSplitFeedback);
-  document.getElementById('split_type').addEventListener('input', updateSplitFeedback);
-  function updateSplitFeedback() {
-    const feedback = document.getElementById('split-feedback');
-    const split_type = document.getElementById('split_type').value;
-    const amount = parseFloat(document.getElementById('amount').value) || 0;
-    if (split_type === 'equal') {
-      const participants = document.getElementById('participants').value.split(',').map(p => p.trim()).filter(p => p);
-      if (participants.length > 0) {
-        const share = amount / participants.length;
-        feedback.textContent = `Each pays: ₹${share.toFixed(2)}`;
+    // Real-time split feedback
+    document.getElementById('amount').addEventListener('input', updateSplitFeedback);
+    document.getElementById('participants').addEventListener('input', updateSplitFeedback);
+    document.getElementById('splits').addEventListener('input', updateSplitFeedback);
+    document.getElementById('split_type').addEventListener('input', updateSplitFeedback);
+    function updateSplitFeedback() {
+      const feedback = document.getElementById('split-feedback');
+      const split_type = document.getElementById('split_type').value;
+      const amount = parseFloat(document.getElementById('amount').value) || 0;
+      if (split_type === 'equal') {
+        const participants = document.getElementById('participants').value.split(',').map(p => p.trim()).filter(p => p);
+        if (participants.length > 0) {
+          const share = amount / participants.length;
+          feedback.textContent = `Each pays: ₹${share.toFixed(2)}`;
+        } else {
+          feedback.textContent = 'Add participants';
+        }
+      } else if (split_type === 'percentage') {
+        const splits = document.getElementById('splits').value.split(',').map(s => {
+          const [, value] = s.split(':').map(p => p.trim());
+          return parseFloat(value) || 0;
+        });
+        const total = splits.reduce((sum, v) => sum + v, 0);
+        feedback.textContent = `Total percentage: ${total.toFixed(2)}% (${total === 100 ? 'Valid' : 'Must be 100%'})`;
       } else {
-        feedback.textContent = 'Add participants';
+        const splits = document.getElementById('splits').value.split(',').map(s => {
+          const [, value] = s.split(':').map(p => p.trim());
+          return parseFloat(value) || 0;
+        });
+        const total = splits.reduce((sum, v) => sum + v, 0);
+        feedback.textContent = `Total split: ₹${total.toFixed(2)} (Must match ₹${amount.toFixed(2)})`;
       }
-    } else if (split_type === 'percentage') {
-      const splits = document.getElementById('splits').value.split(',').map(s => {
-        const [, value] = s.split(':').map(p => p.trim());
-        return parseFloat(value) || 0;
-      });
-      const total = splits.reduce((sum, v) => sum + v, 0);
-      feedback.textContent = `Total percentage: ${total.toFixed(2)}% (${total === 100 ? 'Valid' : 'Must be 100%'})`;
-    } else {
-      const splits = document.getElementById('splits').value.split(',').map(s => {
-        const [, value] = s.split(':').map(p => p.trim());
-        return parseFloat(value) || 0;
-      });
-      const total = splits.reduce((sum, v) => sum + v, 0);
-      feedback.textContent = `Total split: ₹${total.toFixed(2)} (Must match ₹${amount.toFixed(2)})`;
     }
-  }
 
-  // Fetch all data
-  async function fetchAll() {
-    await Promise.all([fetchExpenses(), fetchPeople(), fetchBalances(), fetchSettlements()]);
-  }
+    // Fetch all data
+    async function fetchAll() {
+      await Promise.all([fetchExpenses(), fetchPeople(), fetchBalances(), fetchSettlements()]);
+    }
 
-  // Initial load
-  fetchAll();
-</script>
+    // Initial load
+    fetchAll();
+  </script>
 </body>
 </html>
